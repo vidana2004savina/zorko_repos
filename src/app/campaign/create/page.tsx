@@ -1,0 +1,441 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Info, Check, ChevronRight, ChevronLeft, Truck, Send } from 'lucide-react'
+import { supabase } from '../../../lib/supabase'
+
+const categories = ['Красота', 'Мода', 'Еда', 'Образование', 'Услуги', 'Другое']
+const scales = [
+  { id: 'local', label: 'Локальный', desc: 'Район, город или регион' },
+  { id: 'federal', label: 'Федеральный', desc: 'Вся страна' }
+]
+const bloggerTypes = [
+  { id: 'micro', label: 'Микро-блогер', range: '1–30к подписчиков' },
+  { id: 'medium', label: 'Средний блогер', range: '30–100к' },
+  { id: 'top', label: 'Топ-блогер', range: '>100к' }
+]
+const platforms = [
+  { id: 'tg', label: 'Telegram', icon: '📱', info: 'Прямая реклама разрешена. Эффективно для текстов и ссылок.' },
+  { id: 'vk', label: 'VK', icon: '👥', info: 'Официальная реклама и посевы в сообществах.' },
+  { id: 'yt', label: 'YouTube', icon: '🎥', info: 'Прямая реклама (интеграции) разрешена. Высокое доверие аудитории.' },
+  { id: 'tt', label: 'TikTok', icon: '🎵', info: 'Короткие виральные ролики. Высокий охват.' },
+  { id: 'inst', label: 'Instagram', icon: '📸', info: 'Прямая реклама запрещена. Доступно в формате нативной рекламы.' }
+]
+
+export default function CreateCampaign() {
+  const [step, setStep] = useState(1)
+  const [formData, setFormData] = useState({
+    brandName: '',
+    category: '',
+    scale: 'federal',
+    location: '',
+    hasDelivery: false,
+    description: '',
+    targetAudience: '',
+    goal: '',
+    budget: '',
+    requirements: [] as string[],
+    platforms: [] as string[]
+  })
+  const [showTooltip, setShowTooltip] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const nextStep = () => {
+    if (step < 4) {
+      setStep(s => s + 1)
+    }
+  }
+  const prevStep = () => setStep(s => s - 1)
+
+  const toggleRequirement = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      requirements: prev.requirements.includes(id)
+        ? prev.requirements.filter(r => r !== id)
+        : [...prev.requirements, id]
+    }))
+  }
+
+  const togglePlatform = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      platforms: prev.platforms.includes(id)
+        ? prev.platforms.filter(p => p !== id)
+        : [...prev.platforms, id]
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (loading) return // Предотвращаем двойную отправку
+    
+    console.log('Кнопка нажата, handleSubmit запущен')
+    setLoading(true)
+    try {
+      console.log('Получение сессии...')
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
+      
+      if (!user) {
+        console.error('Пользователь не найден в сессии')
+        alert('Пожалуйста, войдите в систему')
+        router.push('/login')
+        setLoading(false)
+        return
+      }
+      console.log('Создание кампании для пользователя:', user.id)
+
+      const campaignData = {
+        user_id: user.id,
+        title: formData.brandName + ' - ' + formData.category, // Добавляем title, так как он обычно обязателен
+        brand_name: formData.brandName,
+        category: formData.category,
+        scale: formData.scale,
+        description: formData.description,
+        target_audience: formData.targetAudience,
+        goal: formData.goal,
+        budget: formData.budget,
+        budget_range: formData.budget, // Дублируем для совместимости
+        has_delivery: formData.hasDelivery,
+        requirements: formData.requirements,
+        platforms: formData.platforms,
+        status: 'active',
+        location: formData.location
+      }
+      console.log('Попытка вставки данных:', campaignData)
+
+      const { error, data } = await supabase
+        .from('campaigns')
+        .insert(campaignData) // Убираем массив, если это одиночная вставка, или оставляем [campaignData]
+        .select()
+
+      if (error) {
+        throw error
+      }
+
+      console.log('Успешная вставка, данные:', data)
+      router.push('/campaign/matching')
+    } catch (err: any) {
+      console.error('Критическая ошибка при создании кампании:', err)
+      alert(`Ошибка: ${err.message || 'Неизвестная ошибка'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+  return (    <div className="min-h-screen bg-blue-50/30 py-4 md:py-6 px-4 relative overflow-hidden">
+      {/* Декоративные элементы */}
+      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-blue-100 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-orange-50 rounded-full blur-3xl -z-10" />
+
+      <div className="max-w-3xl mx-auto relative z-10">
+        {/* Progress Bar */}
+        <div className="mb-6 flex justify-between items-center px-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black transition-all duration-500 ${
+                step >= i ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-110' : 'bg-white text-blue-200 border border-blue-50'
+              }`}>
+                {step > i ? <Check size={16} /> : i}
+              </div>
+              {i < 4 && (
+                <div className={`w-8 md:w-16 h-1 mx-2 rounded-full transition-all duration-500 ${step > i ? 'bg-blue-600' : 'bg-blue-50'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-blue-100/50 p-5 md:p-8 space-y-6 border border-white">
+          {step === 1 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-blue-900 tracking-tight">О бренде</h2>
+                <p className="text-blue-900/40 font-medium text-xs">Расскажите о вашей компании и масштабе</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Название бренда</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.brandName}
+                    onChange={e => setFormData({...formData, brandName: e.target.value})}
+                    className="w-full h-12 px-4 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-base md:text-sm"
+                    placeholder="Например, Zorko Coffee"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Категория</label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={e => setFormData({...formData, category: e.target.value})}
+                    className="w-full h-12 px-4 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 appearance-none text-base md:text-sm"
+                  >
+                    <option value="">Выберите категорию</option>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Масштаб кампании</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {scales.map(s => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setFormData({...formData, scale: s.id as any})}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all duration-300 ${
+                        formData.scale === s.id ? 'border-blue-600 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-blue-50 hover:border-blue-100 bg-white'
+                      }`}
+                    >
+                      <div className="font-black text-blue-900 text-sm">{s.label}</div>
+                      <div className="text-[10px] text-blue-900/40 font-medium leading-tight">{s.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-blue-900 rounded-2xl shadow-xl shadow-blue-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                    <Truck className="text-white" size={16} />
+                  </div>
+                  <div>
+                    <div className="font-black text-white text-sm">Есть доставка?</div>
+                    <div className="text-[10px] text-white/40 font-medium">Для отправки товаров блогерам</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, hasDelivery: !formData.hasDelivery})}
+                  className={`w-12 h-7 rounded-full transition-all relative ${formData.hasDelivery ? 'bg-orange-500' : 'bg-white/20'}`}
+                >
+                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-lg ${formData.hasDelivery ? 'left-[24px]' : 'left-1'}`} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-blue-900 tracking-tight">Детали кампании</h2>
+                <p className="text-blue-900/40 font-medium text-xs">Опишите ваши цели и целевую аудиторию</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">О бренде</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  className="w-full px-4 py-3 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 resize-none text-base md:text-sm"
+                  placeholder="Миссия, ценности, уникальность..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Целевая аудитория</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.targetAudience}
+                    onChange={e => setFormData({...formData, targetAudience: e.target.value})}
+                    className="w-full h-12 px-4 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-base md:text-sm"
+                    placeholder="Например, девушки 18-25"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Цель рекламы</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.goal}
+                    onChange={e => setFormData({...formData, goal: e.target.value})}
+                    className="w-full h-12 px-4 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-base md:text-sm"
+                    placeholder="Например, продажи"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Бюджет (₽)</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.budget}
+                  onChange={e => setFormData({...formData, budget: e.target.value})}
+                  className="w-full h-12 px-4 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-base md:text-sm"
+                  placeholder="Например, 50 000"
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-blue-900 tracking-tight">Детали кампании</h2>
+                <p className="text-blue-900/40 font-medium text-xs">Опишите ваши цели и целевую аудиторию</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">О бренде</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 resize-none text-sm"
+                  placeholder="Миссия, ценности, уникальность..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Целевая аудитория</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.targetAudience}
+                    onChange={e => setFormData({...formData, targetAudience: e.target.value})}
+                    className="w-full px-4 py-2.5 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-sm"
+                    placeholder="Возраст, интересы, пол..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-blue-900/60 uppercase tracking-widest ml-1">Бюджет на интеграцию</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.budget}
+                    onChange={e => setFormData({...formData, budget: e.target.value})}
+                    className="w-full px-4 py-2.5 bg-blue-50/30 border border-blue-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-blue-900 placeholder:text-blue-200 text-sm"
+                    placeholder="Например, 10 000 - 50 000 ₽"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-blue-900 tracking-tight">Тип блогера</h2>
+                <p className="text-blue-900/40 font-medium text-xs">Выберите требования к вашему идеальному кандидату</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {bloggerTypes.map(type => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => toggleRequirement(type.id)}
+                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${
+                      formData.requirements.includes(type.id) ? 'border-blue-600 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-blue-50 hover:border-blue-100 bg-white'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <div className="font-black text-blue-900 text-sm">{type.label}</div>
+                      <div className="text-[10px] text-blue-900/40 font-medium">{type.range}</div>
+                    </div>
+                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                      formData.requirements.includes(type.id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'border-blue-100'
+                    }`}>
+                      {formData.requirements.includes(type.id) && <Check size={14} />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 4 && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-blue-900 tracking-tight">Платформы</h2>
+                <p className="text-blue-900/40 font-medium text-xs">Где вы хотите разместить рекламу?</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {platforms.map(platform => (
+                  <div key={platform.id} className="relative group">
+                    <button
+                      type="button"
+                      onClick={() => togglePlatform(platform.id)}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${
+                        formData.platforms.includes(platform.id) ? 'border-blue-600 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-blue-50 hover:border-blue-100 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{platform.icon}</span>
+                        <span className="font-black text-blue-900 text-sm">{platform.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowTooltip(showTooltip === platform.id ? null : platform.id);
+                          }}
+                          className="p-1 text-blue-200 hover:text-blue-400 transition-colors"
+                        >
+                          <Info size={16} />
+                        </button>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                          formData.platforms.includes(platform.id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'border-blue-100'
+                        }`}>
+                          {formData.platforms.includes(platform.id) && <Check size={14} />}
+                        </div>
+                      </div>
+                    </button>
+                    
+                    {showTooltip === platform.id && (
+                      <div className="absolute left-0 bottom-full mb-2 p-3 bg-blue-900 text-white text-[10px] rounded-xl shadow-2xl z-50 w-full sm:w-48 animate-in fade-in zoom-in duration-200">
+                        {platform.info}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-blue-50">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 text-blue-900/40 font-black hover:text-blue-600 transition-colors py-2"
+              >
+                <ChevronLeft size={20} /> Назад
+              </button>
+            ) : <div className="hidden sm:block" />}
+
+            {step < 4 ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                className="w-full sm:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-base hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 active:scale-95"
+              >
+                Далее <ChevronRight size={20} />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full sm:w-auto bg-orange-500 text-white px-8 py-4 rounded-2xl font-black text-base hover:bg-orange-600 transition-all shadow-2xl shadow-orange-200 flex items-center justify-center gap-3 active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {loading ? 'Создание...' : 'Найти блогеров'} <Send size={20} />
+              </button>
+            )}
+          </div>        </form>
+      </div>
+    </div>
+  )
+}
