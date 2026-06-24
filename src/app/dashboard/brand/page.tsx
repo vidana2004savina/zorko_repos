@@ -256,45 +256,45 @@ export default function BrandDashboard() {
                   <div className="grid grid-cols-1 gap-6">
                     {typicalTasks.map((task) => (
                       <div key={task.id} className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-blue-100/20 transition-all group">
-                        <div className="p-6 md:p-8 flex flex-col lg:flex-row gap-8">
-                          <div className="flex-1 space-y-6">
+                        <div className="p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8">
+                          <div className="flex-1 space-y-4 md:space-y-6">
                             <div className="flex items-start justify-between gap-4">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-blue-600 font-black text-[10px] uppercase tracking-widest">
                                   <Sparkles size={14} /> {task.brand}
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">{task.title}</h3>
+                                <h3 className="text-lg md:text-2xl font-black text-slate-900 leading-tight">{task.title}</h3>
                               </div>
-                              <div className="px-4 py-2 bg-slate-50 rounded-xl text-[10px] font-black text-slate-500 whitespace-nowrap uppercase tracking-wider">
+                              <div className="px-3 py-1.5 md:px-4 md:py-2 bg-slate-50 rounded-xl text-[9px] md:text-[10px] font-black text-slate-500 whitespace-nowrap uppercase tracking-wider">
                                 {task.type}
                               </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Описание</div>
-                                <p className="text-sm text-slate-600 font-medium leading-relaxed">{task.description}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                              <div className="space-y-1 md:space-y-2">
+                                <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Описание</div>
+                                <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">{task.description}</p>
                               </div>
-                              <div className="space-y-2">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Требования</div>
-                                <p className="text-sm text-slate-600 font-medium leading-relaxed">{task.requirements}</p>
+                              <div className="space-y-1 md:space-y-2">
+                                <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Требования</div>
+                                <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">{task.requirements}</p>
                               </div>
                             </div>
-                            <div className="flex flex-wrap gap-6 pt-2">
-                              <div className="flex items-center gap-2"><LayoutDashboard size={16} className="text-slate-400" /><div className="text-xs font-bold text-slate-600">{task.platformName}</div></div>
-                              <div className="flex items-center gap-2"><Clock size={16} className="text-slate-400" /><div className="text-xs font-bold text-slate-600">{task.deadline}</div></div>
-                              <div className="flex items-center gap-2"><CreditCard size={16} className="text-slate-400" /><div className="text-xs font-bold text-slate-900">{task.budget}</div></div>
+                            <div className="flex flex-wrap gap-4 md:gap-6 pt-2">
+                              <div className="flex items-center gap-2"><LayoutDashboard size={14} className="text-slate-400" /><div className="text-[10px] md:text-xs font-bold text-slate-600">{task.platformName}</div></div>
+                              <div className="flex items-center gap-2"><Clock size={14} className="text-slate-400" /><div className="text-[10px] md:text-xs font-bold text-slate-600">{task.deadline}</div></div>
+                              <div className="flex items-center gap-2"><CreditCard size={14} className="text-slate-400" /><div className="text-[10px] md:text-xs font-bold text-slate-900">{task.budget}</div></div>
                             </div>
                           </div>
-                          <div className="lg:w-64 flex flex-col gap-3 shrink-0">
-                            <div className="aspect-square rounded-2xl bg-slate-100 overflow-hidden mb-2">
+                          <div className="w-full lg:w-64 flex flex-col gap-3 shrink-0">
+                            <div className="hidden md:block aspect-square rounded-2xl bg-slate-100 overflow-hidden mb-2">
                               <img src={task.image} alt={task.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
                             </div>
                         <button 
                           onClick={() => router.push(`/deal/${task.id}`)}
-                          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-2"
+                          className="w-full bg-blue-600 text-white py-3.5 md:py-4 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-2"
                         >
                           Начать сотрудничество <ChevronRight size={18} />
-                        </button>                            <button onClick={() => setDetailedTask(task)} className="w-full bg-white border-2 border-slate-100 text-slate-600 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all">
+                        </button>                            <button onClick={() => setDetailedTask(task)} className="w-full bg-white border-2 border-slate-100 text-slate-600 py-3.5 md:py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all">
                               Подробнее
                             </button>
                           </div>
@@ -310,63 +310,64 @@ export default function BrandDashboard() {
       </main>
 
       {detailedTask && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl relative my-auto">
-            <button onClick={() => setDetailedTask(null)} className="absolute top-6 right-6 p-3 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors z-10">
-              <X size={24} />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-0 md:p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl min-h-screen md:min-h-0 md:rounded-[40px] shadow-2xl relative my-auto">
+            <button onClick={() => setDetailedTask(null)} className="absolute top-4 right-4 md:top-6 md:right-6 p-2 md:p-3 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors z-10">
+              <X size={20} className="md:hidden" />
+              <X size={24} className="hidden md:block" />
             </button>
-            <div className="p-6 md:p-10 space-y-10">
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="w-32 h-32 rounded-3xl overflow-hidden shrink-0 shadow-lg">
+            <div className="p-6 md:p-10 space-y-8 md:space-y-10">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl overflow-hidden shrink-0 shadow-lg">
                   <img src={detailedTask.image} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest"><Sparkles size={16} /> {detailedTask.brand}</div>
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">{detailedTask.title}</h2>
-                  <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-black uppercase tracking-wider">{detailedTask.type}</div>
+                <div className="space-y-2 md:space-y-3">
+                  <div className="flex items-center gap-2 text-blue-600 font-black text-[10px] md:text-xs uppercase tracking-widest"><Sparkles size={16} /> {detailedTask.brand}</div>
+                  <h2 className="text-2xl md:text-4xl font-black text-slate-900 leading-tight">{detailedTask.title}</h2>
+                  <div className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider">{detailedTask.type}</div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="p-5 bg-slate-50 rounded-3xl space-y-2">
-                  <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest"><LayoutDashboard size={14} /> Платформа</div>
-                  <div className="text-sm font-bold text-slate-900">{detailedTask.platforms.join(', ')}</div>
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                <div className="p-4 md:p-5 bg-slate-50 rounded-2xl md:rounded-3xl space-y-1 md:space-y-2">
+                  <div className="flex items-center gap-2 text-slate-400 font-black text-[9px] md:text-[10px] uppercase tracking-widest"><LayoutDashboard size={14} /> Платформа</div>
+                  <div className="text-xs md:text-sm font-bold text-slate-900">{detailedTask.platforms.join(', ')}</div>
                 </div>
-                <div className="p-5 bg-slate-50 rounded-3xl space-y-2">
-                  <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest"><MapPin size={14} /> Локация</div>
-                  <div className="text-sm font-bold text-slate-900">{detailedTask.location}</div>
+                <div className="p-4 md:p-5 bg-slate-50 rounded-2xl md:rounded-3xl space-y-1 md:space-y-2">
+                  <div className="flex items-center gap-2 text-slate-400 font-black text-[9px] md:text-[10px] uppercase tracking-widest"><MapPin size={14} /> Локация</div>
+                  <div className="text-xs md:text-sm font-bold text-slate-900">{detailedTask.location}</div>
                 </div>
-                <div className="p-5 bg-slate-50 rounded-3xl space-y-2">
-                  <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest"><Truck size={14} /> Доставка</div>
-                  <div className="text-sm font-bold text-slate-900">{detailedTask.delivery}</div>
+                <div className="p-4 md:p-5 bg-slate-50 rounded-2xl md:rounded-3xl space-y-1 md:space-y-2">
+                  <div className="flex items-center gap-2 text-slate-400 font-black text-[9px] md:text-[10px] uppercase tracking-widest"><Truck size={14} /> Доставка</div>
+                  <div className="text-xs md:text-sm font-bold text-slate-900">{detailedTask.delivery}</div>
                 </div>
-                <div className="p-5 bg-blue-600 rounded-3xl space-y-2">
-                  <div className="flex items-center gap-2 text-white/60 font-black text-[10px] uppercase tracking-widest"><CreditCard size={14} /> Стоимость</div>
-                  <div className="text-sm font-bold text-white">{detailedTask.budget}</div>
+                <div className="p-4 md:p-5 bg-blue-600 rounded-2xl md:rounded-3xl space-y-1 md:space-y-2">
+                  <div className="flex items-center gap-2 text-white/60 font-black text-[9px] md:text-[10px] uppercase tracking-widest"><CreditCard size={14} /> Стоимость</div>
+                  <div className="text-xs md:text-sm font-bold text-white">{detailedTask.budget}</div>
                 </div>
               </div>
-              <div className="space-y-6">
-                <h3 className="text-xl font-black text-slate-900">Шаги рекламной кампании</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-4 md:space-y-6">
+                <h3 className="text-lg md:text-xl font-black text-slate-900">Шаги рекламной кампании</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                   {fullDealSteps.map((step, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all">
-                      <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-black text-xs ${step.status === 'completed' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{step.status === 'completed' ? <CheckCircle2 size={16} /> : i + 1}</div>
+                    <div key={i} className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white border border-slate-100 rounded-xl md:rounded-2xl shadow-sm hover:shadow-md transition-all">
+                      <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full shrink-0 flex items-center justify-center font-black text-[10px] md:text-xs ${step.status === 'completed' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{step.status === 'completed' ? <CheckCircle2 size={14} /> : i + 1}</div>
                       <div className="space-y-0.5">
-                        <div className="text-[11px] font-bold text-slate-900 leading-tight">{step.title}</div>
-                        {step.sub && <div className="text-[9px] text-slate-400 italic">{step.sub}</div>}
+                        <div className="text-[10px] md:text-[11px] font-bold text-slate-900 leading-tight">{step.title}</div>
+                        {step.sub && <div className="text-[8px] md:text-[9px] text-slate-400 italic">{step.sub}</div>}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="space-y-6">
-                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">Подходящие кандидаты <span className="px-2 py-1 bg-amber-100 text-amber-600 rounded-lg text-[10px] flex items-center gap-1"><Sparkles size={10} /> AI ПОДБОР</span></h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-4 md:space-y-6 pb-6 md:pb-0">
+                <h3 className="text-lg md:text-xl font-black text-slate-900 flex items-center gap-2">Подходящие кандидаты <span className="px-2 py-1 bg-amber-100 text-amber-600 rounded-lg text-[9px] md:text-[10px] flex items-center gap-1"><Sparkles size={10} /> AI ПОДБОР</span></h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                   {mockBloggers.map((blogger) => (
-                    <div key={blogger.id} className="p-4 bg-slate-50 rounded-3xl flex flex-col items-center text-center space-y-3 border border-transparent hover:border-blue-200 transition-all">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm"><img src={blogger.avatar} alt="" className="w-full h-full object-cover" /></div>
-                      <div><div className="text-sm font-black text-slate-900">{blogger.name}</div><div className="text-[10px] text-slate-400 font-bold">{blogger.handle}</div></div>
-                      <div className="flex items-center gap-1 text-amber-500 font-black text-[10px]"><Star size={10} fill="currentColor" /> 4.9</div>
-                      <button className="w-full py-2 bg-white text-blue-600 rounded-xl text-[10px] font-black border border-blue-100 hover:bg-blue-600 hover:text-white transition-all">Отправить предложение</button>
+                    <div key={blogger.id} className="p-4 bg-slate-50 rounded-2xl md:rounded-3xl flex flex-col items-center text-center space-y-3 border border-transparent hover:border-blue-200 transition-all">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl overflow-hidden shadow-sm"><img src={blogger.avatar} alt="" className="w-full h-full object-cover" /></div>
+                      <div><div className="text-xs md:text-sm font-black text-slate-900">{blogger.name}</div><div className="text-[9px] md:text-[10px] text-slate-400 font-bold">{blogger.handle}</div></div>
+                      <div className="flex items-center gap-1 text-amber-500 font-black text-[9px] md:text-[10px]"><Star size={10} fill="currentColor" /> 4.9</div>
+                      <button className="w-full py-2.5 bg-white text-blue-600 rounded-xl text-[10px] font-black border border-blue-100 hover:bg-blue-600 hover:text-white transition-all">Отправить предложение</button>
                     </div>
                   ))}
                 </div>
