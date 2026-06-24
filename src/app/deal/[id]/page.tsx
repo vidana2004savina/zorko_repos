@@ -1,0 +1,1150 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { 
+  MessageSquare, 
+  FileText, 
+  Upload, 
+  Send, 
+  Clock, 
+  ShieldCheck, 
+  ChevronRight, 
+  ChevronLeft,
+  Info,
+  X,
+  Calculator,
+  Sparkles,
+  ExternalLink,
+  Paperclip,
+  CreditCard,
+  ArrowLeft,
+  Save,
+  Download,
+  CheckCircle2
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+const mockCandidates = [
+  {
+    id: '1',
+    name: 'Алина Соколова',
+    handle: '@alina_style',
+    experience: 'ниша beauty, ER 3.2%, 15+ успешных кампаний',
+    offer: '7 000 ₽, 10 дней, Reels + Stories',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alina'
+  },
+  {
+    id: '2',
+    name: 'Мария Кот',
+    handle: '@masha_beauty',
+    experience: 'ниша beauty/lifestyle, ER 4.1%, 20+ кампаний',
+    offer: '6 500 ₽, 7 дней, Reels',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria'
+  },
+  {
+    id: '3',
+    name: 'Елена Иванова',
+    handle: '@elena_food',
+    experience: 'ниша lifestyle/food, ER 2.8%, 10+ кампаний',
+    offer: '5 000 ₽, 5 дней, Stories',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena'
+  }
+]
+
+// --- Тексты договоров ---
+const PRELIMINARY_AGREEMENT = `ПРЕДВАРИТЕЛЬНОЕ СОГЛАСИЕ О НАМЕРЕНИИ ЗАКЛЮЧИТЬ ДОГОВОР
+
+г. Москва                                   «___» ________ 2026 г.
+
+1. СТОРОНЫ СОГЛАШЕНИЯ
+Бренд (Заказчик):
+Наименование: ShineSkin
+ИНН: 7700123456
+Юридический адрес: г. Москва, ул. Косметологов, 1
+
+Блогер (Исполнитель):
+ФИО: {bloggerName}
+Статус: самозанятый / ИНН: 772233445566
+Контактный телефон: +7 (999) 123-45-67
+
+2. ПРЕДМЕТ СОГЛАШЕНИЯ
+1. Стороны выражают намерение заключить в будущем договор на оказание услуг по созданию и размещению рекламного контента.
+2. Основной договор будет регулировать отношения по созданию, согласованию и публикации рекламного материала в социальной сети/мессенджере: {platform}
+3. Ориентировочный бюджет сделки: {budget} ₽
+4. Сроки выполнения работ: с 01.07.2026 по 10.07.2026
+5. Формат и содержание креатива будут согласованы в рамках Основного договора.
+
+3. ОБЯЗАТЕЛЬСТВА СТОРОН
+1. Каждая из сторон обязуется добросовестно вести переговоры и предпринять все необходимые действия для заключения Основного договора в течение 5 (пяти) рабочих дней.
+2. Стороны обязуются не разглашать условия будущего сотрудничества третьим лицам.
+3. Настоящее Согласие не является офертой и не порождает прав и обязанностей, связанных с исполнением обязательств по Основному договору, за исключением обязанности добросовестно вести переговоры.
+
+4. ОТВЕТСТВЕННОСТЬ
+1. Стороны самостоятельно несут ответственность за соблюдение требований законодательства РФ.
+2. Платформа «Зорко» предоставляет техническую возможность для взаимодействия сторон и не является стороной настоящего Согласия, не несёт ответственности за содержание, исполнение или неисполнение обязательств сторонами.
+
+5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ
+1. Настоящее Согласие составлено в 2 (двух) экземплярах, имеющих равную юридическую силу.
+2. Подписанием настоящего Согласия стороны подтверждают, что ознакомлены с условиями, понимают их и согласны с ними.`;
+
+const UGC_CONTRACT_TEMPLATE = `ДОГОВОР ОКАЗАНИЯ УСЛУГ: ПЕРЕДАЧА ПРАВ
+г. Москва «______» __________ 2026 г.
+
+СТОРОНЫ ДОГОВОРА
+Бренд (Заказчик):
+Наименование: {brandName}
+ИНН: 7700123456
+Юридический адрес: г. Москва, ул. Косметологов, 1
+Представитель: Иванов И.И., генеральный директор
+
+Блогер (Исполнитель):
+ФИО: {bloggerName}
+Статус: самозанятый
+ИНН: 772233445566
+
+ПРЕДМЕТ ДОГОВОРА
+Блогер обязуется создать видеоматериал (UGC-контент) о продукте Бренда и передать исключительные интеллектуальные права на него Бренду.
+Вы являетесь лицом бренда и передаёте исключительные интеллектуальные права на созданное видео бренду после оплаты.
+
+ПРАВА И ОБЯЗАННОСТИ СТОРОН
+3.1. Блогер обязуется:
+- Создать видеоматериал в соответствии с ТЗ.
+- Передать исходный файл видеоматериала Бренду через Платформу.
+- Гарантировать, что является автором видео и не нарушает права третьих лиц.
+
+3.2. Бренд обязуется:
+- Предоставить продукт для съёмки.
+- Оплатить услуги Блогера.
+
+ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ
+Исключительные интеллектуальные права на созданный видеоматериал переходят к Бренду в полном объёме с момента полной оплаты услуг. Бренд имеет право использовать видеоматериал любым способом, включая переработку, размещение в рекламе и передачу третьим лицам.
+
+СТОИМОСТЬ И ПОРЯДОК РАСЧЕТОВ
+Стоимость услуг: {budget} ₽.
+Оплата производится после загрузки видеоматериала и его приемки Брендом.
+
+ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ
+Договор вступает в силу с момента подписания в электронном виде на Платформе «Зорко».`;
+
+const MAIN_CONTRACT_TEMPLATE = `ДОГОВОР НА ОКАЗАНИЕ УСЛУГ ПО СОЗДАНИЮ И РАЗМЕЩЕНИЮ РЕКЛАМНОГО КОНТЕНТА
+г. Москва «______» __________ 2026 г.
+
+СТОРОНЫ ДОГОВОРА
+Бренд (Заказчик):
+Наименование: {brandName}
+ИНН: 7700123456
+Юридический адрес: г. Москва, ул. Косметологов, 1
+Банковские реквизиты: Р/С 40702810000000001234 в ПАО СБЕРБАНК
+Представитель (ФИО, должность): Иванов И.И., генеральный директор
+
+Блогер (Исполнитель):
+ФИО: {bloggerName}
+Статус: самозанятый
+ИНН: 772233445566
+Контактные данные: +7 (999) 123-45-67
+
+ПРЕДМЕТ ДОГОВОРА
+Блогер обязуется создать и разместить рекламный контент о продукте/услуге Бренда в социальной сети/мессенджере: {platform}
+
+Формат размещения: Reels / Stories
+(пост / видео / сторис / статья и т.д.)
+
+Срок публикации: до 15.07.2026
+
+Бренд обязуется принять и оплатить оказанные услуги в порядке и на условиях, предусмотренных настоящим Договором.
+
+ПРАВА И ОБЯЗАННОСТИ СТОРОН
+3.1. Блогер обязуется:
+Создать контент в соответствии с согласованным техническим заданием (Приложение №1 к Договору).
+Разместить контент в указанный срок.
+Предоставить Бренду ссылку на публикацию и отчёт по итогам размещения.
+Указать в публикации маркировку «Реклама» и необходимый токен (ERID) в соответствии с требованиями ФЗ-38.
+Не разглашать конфиденциальную информацию о Бренде, полученную в ходе исполнения Договора.
+
+3.2. Бренд обязуется:
+Предоставить Блогеру всю необходимую информацию и материалы для создания контента (бриф, референсы).
+Согласовать контент в течение 2 (двух) рабочих дней с момента получения.
+Оплатить услуги Блогера в размере и порядке, установленном Договором.
+
+СТОИМОСТЬ УСЛУГ И ПОРЯДОК РАСЧЕТОВ
+Стоимость услуг составляет: {budget} ₽ (без НДС).
+Оплата производится в следующем порядке:
+50% (предоплата) в течение 3 (трёх) рабочих дней с момента подписания Договора.
+50% (окончательный расчёт) в течение 5 (пяти) рабочих дней после подписания Акта выполненных работ.
+Способ оплаты: перечисление денежных средств на банковский счёт/карту Блогера.
+
+ОТВЕТСТВЕННОСТЬ СТОРОН
+За нарушение сроков публикации Блогер уплачивает неустойку в размере 0,5% от суммы Договора за каждый день просрочки, но не более 10% от суммы.
+За нарушение сроков оплаты Бренд уплачивает неустойку в размере 0,5% от суммы задолженности за каждый день просрочки, но не более 10% от суммы.
+Стороны освобождаются от ответственности за неисполнение обязательств при наступлении обстоятельств непреодолимой силы (форс-мажор).
+
+ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ
+Исключительные права на созданный контент переходят к Бренду после полной оплаты услуг.
+Блогер не вправе использовать контент в коммерческих целях без письменного согласия Бренда.
+Блогер гарантирует, что контент не нарушает права третьих лиц.
+
+КОНФИДЕНЦИАЛЬНОСТЬ
+Стороны обязуются не разглашать условия настоящего Договора и коммерческую информацию, полученную в ходе его исполнения, без письменного согласия другой стороны.
+Обязательства по конфиденциальности действуют в течение 3 (трёх) лет после окончания срока действия Договора.
+
+РАЗРЕШЕНИЕ СПОРОВ
+Все споры и разногласия разрешаются путём переговоров.
+В случае недостижения согласия споры передаются на рассмотрение в суд по месту нахождения Бренда в соответствии с действующим законодательством РФ.
+
+СРОК ДЕЙСТВИЯ И ПОРЯДОК РАСТОРЖЕНИЯ
+Договор вступает в силу с даты подписания и действует до полного исполнения сторонами своих обязательств.
+Договор может быть расторгнут досрочно по соглашению сторон или в одностороннем порядке с письменным уведомлением за 5 (пять) рабочих дней до даты расторжения.
+
+ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ
+Настоящий Договор составлен в 2 (двух) экземплярах, имеющих равную юридическую силу, по одному для каждой из сторон.
+Все изменения и дополнения к Договору действительны, если они совершены в письменной форме и подписаны обеими сторонами.
+Платформа «Зорко» предоставляет стандартную форму Договора, но не является стороной настоящего Договора и не несёт ответственности за его содержание, исполнение или неисполнение обязательств сторонами. Стороны самостоятельно несут ответственность за соблюдение законодательства РФ (включая ФЗ-38, ФЗ-347) при заключении и исполнении Договора.
+
+РЕКВИЗИТЫ И ПОДПИСИ СТОРОН:
+Бренд (Заказчик): _____________________________________ (подпись) МП
+Блогер (Исполнитель): _____________________________________ (подпись)
+Дата: _____________________________________`;
+// --- Типы ---
+type StepStatus = 'upcoming' | 'current' | 'completed'
+
+interface DealStep {
+  id: number
+  title: string
+  shortTitle: string
+}
+
+export default function DealPage() {
+  const params = useParams()
+  const router = useRouter()
+  
+  const isInstagramUGC = params.id === 'typical-2'
+
+  const steps: DealStep[] = isInstagramUGC ? [
+    { id: 1, title: 'Согласование блогера и креатива', shortTitle: 'Согласование' },
+    { id: 2, title: 'Подписание предварительного договора', shortTitle: 'Согласие' },
+    { id: 3, title: 'Договор оказания услуг: передача прав', shortTitle: 'Договор' },
+    { id: 4, title: 'Счет и оплата', shortTitle: 'Оплата' },
+    { id: 5, title: 'Передача видеоматериала', shortTitle: 'Видео' },
+    { id: 6, title: 'Завершение сделки', shortTitle: 'Финал' },
+  ] : [
+    { id: 1, title: 'Согласование блогера и креатива', shortTitle: 'Согласование' },
+    { id: 2, title: 'Подписание предварительного договора', shortTitle: 'Согласие' },
+    { id: 3, title: 'Стандартная форма договора', shortTitle: 'Договор' },
+    { id: 4, title: 'Выставление счета блогером', shortTitle: 'Счет' },
+    { id: 5, title: 'Оплата счета брендом', shortTitle: 'Оплата' },
+    { id: 6, title: 'Получение токена в ОРД', shortTitle: 'Токен' },
+    { id: 7, title: 'Размещение рекламы с токеном', shortTitle: 'Публикация' },
+    { id: 8, title: 'Отчет об охватах и передача в ЕРИР', shortTitle: 'Отчет' },
+    { id: 9, title: 'Завершение сделки и финальный расчет', shortTitle: 'Финал' },
+  ]
+
+  const [currentStep, setCurrentStep] = useState(1)
+  const [dealData, setDealData] = useState(() => {
+    if (params.id === 'typical-2') {
+      return {
+        id: params.id,
+        taskName: 'UGC-съёмка крема от солнца SPF 50',
+        brand: 'ShineSkin',
+        blogger: 'Алина Соколова',
+        platform: 'Instagram*',
+        budget: 4500,
+        status: 'in_progress',
+        erid: '',
+        link: '',
+        stats: { views: 0, clicks: 0, reach: 0 },
+        taxInfo: null as any
+      }
+    }
+    if (params.id === 'typical-3') {
+      return {
+        id: params.id,
+        taskName: 'Реклама кофейни по бартеру (локально)',
+        brand: 'ПораКофе',
+        blogger: 'Алина Соколова',
+        platform: 'ВКонтакте',
+        budget: 1000,
+        status: 'in_progress',
+        erid: '',
+        link: '',
+        stats: { views: 0, clicks: 0, reach: 0 },
+        taxInfo: null as any
+      }
+    }
+    return {
+      id: params.id,
+      taskName: 'Показ новой линейки уходовой косметики',
+      brand: 'ShineSkin',
+      blogger: 'Алина Соколова',
+      platform: 'TikTok',
+      budget: 7000,
+      status: 'in_progress',
+      erid: '',
+      link: '',
+      stats: { views: 0, clicks: 0, reach: 0 },
+      taxInfo: null as any
+    }
+  })
+  const [showModal, setShowModal] = useState<'preliminary' | 'main' | 'tax' | 'selectBlogger' | 'chat' | null>(null)
+  const [stepStates, setStepSteps] = useState<Record<number, any>>({
+    1: { confirmed: false, selectedBlogger: null },
+    2: { brandAgreed: false, bloggerAgreed: true }, // Блогер согласен по умолчанию для демо
+    3: { agreed: false, fileUploaded: false },
+    4: { file: null, sent: false },
+    5: { file: null, paid: false, videoUrl: null, videoReceived: false },
+    6: { requested: false, loading: false, received: false },
+    7: { link: '', posted: false },
+    8: { sentToErir: false, loading: false },
+    9: { brandFinished: false, bloggerFinished: false }
+  })
+  // --- Подстановка данных в договор ---
+  const getContractText = (template: string) => {
+    const baseTemplate = isInstagramUGC ? UGC_CONTRACT_TEMPLATE : template;
+    return baseTemplate
+      .replace(/{brandName}/g, dealData.brand)
+      .replace(/{bloggerName}/g, stepStates[1].selectedBlogger?.name || dealData.blogger)
+      .replace(/{platform}/g, dealData.platform)
+      .replace(/{budget}/g, dealData.budget.toString());
+  }
+  // --- Генерация токена ---
+  const generateErid = () => {
+    setStepSteps(prev => ({ ...prev, 6: { ...prev[6], loading: true } }))
+    setTimeout(() => {
+      const token = `ERID-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      setDealData(prev => ({ ...prev, erid: token }))
+      setStepSteps(prev => ({ ...prev, 6: { ...prev[6], loading: false, received: true } }))
+    }, 2000)
+  }
+
+  // --- Калькулятор налогов ---
+  const calculateTax = () => {
+    const tax = dealData.budget * 0.03
+    const teacherDays = Math.round(tax / 1500)
+    const pensioners = Math.round(tax / 500)
+    const lunches = Math.round(tax / 150)
+    
+    return {
+      tax,
+      teacherDays,
+      pensioners,
+      lunches,
+      commission: 250,
+      support: 873
+    }
+  }
+
+  // --- Расчет эффективности маркетинга ---
+  const [marketingStats, setMarketingStats] = useState({
+    spend: 7000,
+    impressions: 0,
+    clicks: 0,
+    sales: 0,
+    revenue: 0
+  })
+
+  const calculateMarketingMetrics = () => {
+    const { spend, impressions, clicks, sales, revenue } = marketingStats
+    return {
+      cpm: impressions > 0 ? ((spend / impressions) * 1000).toFixed(2) : '0',
+      cpc: clicks > 0 ? (spend / clicks).toFixed(2) : '0',
+      ctr: impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0',
+      conversionRate: clicks > 0 ? ((sales / clicks) * 100).toFixed(2) : '—',
+      romi: spend > 0 ? (((revenue - spend) / spend) * 100).toFixed(2) : '0'
+    }
+  }
+  // --- Логика переходов ---
+  const completeStep = (stepId: number) => {
+    if (stepId < 9) {
+      setCurrentStep(stepId + 1)
+    } else {
+      setDealData(prev => ({ ...prev, status: 'completed' }))
+      alert('Сделка завершена!')
+      router.push('/dashboard/brand')
+    }
+  }
+
+  const getInsights = () => {
+    const metrics = calculateMarketingMetrics();
+    const romi = parseFloat(metrics.romi);
+    const ctr = parseFloat(metrics.ctr);
+    const cr = metrics.conversionRate === '—' ? 0 : parseFloat(metrics.conversionRate);
+    const spend = marketingStats.spend;
+    
+    const insights = [];
+    
+    if (romi > 100) insights.push("Кампания окупилась с прибылью.");
+    else if (romi < 0) insights.push("Кампания убыточна, рекомендуется пересмотреть стратегию.");
+    
+    if (ctr > 2) insights.push("Высокий CTR — контент привлекателен.");
+    
+    if (cr > 5) insights.push("Отличная конверсия — аудитория откликается.");
+    
+    if (insights.length === 0) insights.push("Показатели в норме, но есть потенциал для улучшения.");
+    
+    if (spend > 10000 && romi > 50) insights.push("При значительном бюджете сохраняется хорошая окупаемость.");
+    if (ctr < 0.5 && marketingStats.impressions > 1000) insights.push("Низкий CTR при больших показах может говорить о нецелевой аудитории.");
+
+    return insights;
+  }
+
+  return (    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-4 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.back()} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+              <ArrowLeft size={20} className="text-slate-500" />
+            </button>
+            <div>
+              <h1 className="text-lg md:text-xl font-black text-slate-900 leading-tight">{dealData.taskName}</h1>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
+                <span className="text-blue-600">{dealData.platform}</span>
+                <span>•</span>
+                <span>Бюджет: {dealData.budget} ₽</span>
+                <span>•</span>
+                <span className={dealData.status === 'completed' ? 'text-emerald-500' : 'text-amber-500'}>
+                  {dealData.status === 'completed' ? 'Завершена' : 'В процессе'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-black">
+              Шаг {currentStep} из {steps.length}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Progress Stepper */}
+      <div className="bg-white border-b border-slate-100 overflow-x-auto no-scrollbar">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-6">
+          <div className="flex justify-between items-center min-w-[800px] relative">
+            {/* Background Line */}
+            <div className="absolute top-5 left-0 right-0 h-0.5 bg-slate-100 -z-0" />
+            
+            {steps.map((step) => {
+              const isCompleted = step.id < currentStep
+              const isCurrent = step.id === currentStep
+              return (
+                <button 
+                  key={step.id} 
+                  onClick={() => setCurrentStep(step.id)}
+                  className="flex flex-col items-center gap-3 relative z-10 group"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm transition-all duration-300 ${isCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' : isCurrent ? 'bg-blue-600 text-white shadow-lg shadow-blue-100 scale-110' : 'bg-white border-2 border-slate-100 text-slate-400 group-hover:border-blue-200'}`}>
+                    {isCompleted ? <CheckCircle2 size={20} /> : step.id}
+                  </div>
+                  <div className={`text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${isCurrent ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                    {step.shortTitle}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}      <main className="flex-1 max-w-4xl mx-auto w-full p-4 md:p-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-white overflow-hidden"
+          >
+            <div className="p-6 md:p-10 space-y-8">
+              {/* Step Header */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest">
+                  <Sparkles size={14} /> Этап {currentStep}
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900">{steps[currentStep-1].title}</h2>
+              </div>
+
+              {/* Step Content */}
+              <div className="min-h-[300px]">
+                {currentStep === 1 && (
+                  <div className="space-y-6">
+                    {!stepStates[1].selectedBlogger ? (
+                      <div className="text-center py-12 space-y-6">
+                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-600">
+                          <Sparkles size={40} />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-black text-slate-900">Выберите исполнителя</h3>
+                          <p className="text-sm text-slate-500 max-w-xs mx-auto">Мы подобрали лучших кандидатов, которые откликнулись на ваше задание</p>
+                        </div>
+                        <button 
+                          onClick={() => setShowModal('selectBlogger')}
+                          className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
+                        >
+                          Посмотреть кандидатов
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6 animate-in fade-in duration-500">
+                        <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm">
+                              <img src={stepStates[1].selectedBlogger.avatar} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <div className="font-black text-slate-900">{stepStates[1].selectedBlogger.name}</div>
+                              <div className="text-xs text-slate-400 font-bold">{stepStates[1].selectedBlogger.handle}</div>
+                            </div>
+                          </div>
+                          <button onClick={() => setShowModal('selectBlogger')} className="text-xs font-black text-blue-600 hover:underline">Изменить выбор</button>
+                        </div>
+                        
+                        <div className="bg-slate-50 rounded-3xl p-6 space-y-4">
+                          <div className="flex items-center gap-3 text-slate-400 font-bold text-sm">
+                            <MessageSquare size={18} /> Чат по креативу
+                          </div>
+                          <div className="h-48 bg-white rounded-2xl border border-slate-100 p-4 overflow-y-auto space-y-3">
+                            <div className="bg-blue-50 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm font-medium text-slate-700">
+                              Здравствуйте! Давайте обсудим сценарий Reels.
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-2xl rounded-tr-none max-w-[80%] ml-auto text-sm font-medium text-slate-700 text-right">
+                              Привет! Я подготовила референсы, прикрепляю файл.
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <input type="text" placeholder="Напишите сообщение..." className="flex-1 bg-white border border-slate-100 rounded-xl px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20" />
+                            <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all"><Send size={18} /></button>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => completeStep(1)}
+                          className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                        >
+                          Подтвердить согласование <ChevronRight size={20} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-6">
+                    <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 flex gap-4">
+                      <Info className="text-blue-600 shrink-0" size={24} />
+                      <p className="text-sm font-medium text-blue-900 leading-relaxed">
+                        На этом этапе стороны подтверждают серьезность намерений. Это еще не основной договор, но важный шаг для фиксации условий.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button onClick={() => setShowModal('preliminary')} className="p-6 bg-white border-2 border-slate-100 rounded-3xl flex flex-col items-center gap-3 hover:border-blue-200 transition-all group">
+                        <FileText size={32} className="text-slate-300 group-hover:text-blue-500" />
+                        <span className="font-black text-sm text-slate-600">Посмотреть договор</span>
+                      </button>
+                      <button className="p-6 bg-white border-2 border-slate-100 rounded-3xl flex flex-col items-center gap-3 hover:border-blue-200 transition-all group">
+                        <Download size={32} className="text-slate-300 group-hover:text-blue-500" />
+                        <span className="font-black text-sm text-slate-600">Скачать PDF</span>
+                      </button>
+                    </div>
+                    <div className="space-y-3 pt-4">
+                      <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all">
+                        <input type="checkbox" checked={stepStates[2].brandAgreed} onChange={e => setStepSteps(prev => ({...prev, 2: {...prev[2], brandAgreed: e.target.checked}}))} className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500" />
+                        <span className="text-sm font-bold text-slate-700">Бренд согласен</span>
+                      </label>
+                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 opacity-70">
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
+                            <CheckCircle2 size={14} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700">Блогер согласен</span>
+                        </div>
+                        {stepStates[2].brandAgreed && (
+                          <span className="text-[10px] font-black text-emerald-600 uppercase animate-in fade-in slide-in-from-right-2">Ваше согласие принято</span>
+                        )}
+                      </div>
+                      {stepStates[2].brandAgreed && (
+                        <p className="text-[11px] text-slate-400 italic text-center pt-2">
+                          Блогеру будет направлен договор для ознакомления.
+                        </p>
+                      )}
+                    </div>
+                    <button 
+                      disabled={!stepStates[2].brandAgreed}
+                      onClick={() => completeStep(2)}
+                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Подтвердить согласие
+                    </button>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="space-y-6">
+                    <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 flex gap-4">
+                      <ShieldCheck className="text-amber-600 shrink-0" size={24} />
+                      <p className="text-xs font-medium text-amber-900 leading-relaxed">
+                        Платформа предоставляет стандартную форму договора. Стороны сами несут ответственность за его содержание и соблюдение законодательства.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button onClick={() => setShowModal('main')} className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex flex-col items-center gap-2 hover:border-blue-200 transition-all group">
+                        <FileText size={24} className="text-slate-300 group-hover:text-blue-500" />
+                        <span className="font-black text-[10px] text-slate-600 uppercase">Шаблон</span>
+                      </button>
+                      <button className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex flex-col items-center gap-2 hover:border-blue-200 transition-all group">
+                        <Upload size={24} className="text-slate-300 group-hover:text-blue-500" />
+                        <span className="font-black text-[10px] text-slate-600 uppercase text-center leading-tight">Загрузить подписанный</span>
+                      </button>
+                      <button onClick={() => setShowModal('chat')} className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex flex-col items-center gap-2 hover:border-blue-200 transition-all group">
+                        <MessageSquare size={24} className="text-slate-300 group-hover:text-blue-500" />
+                        <span className="font-black text-[10px] text-slate-600 uppercase">Написать блогеру</span>
+                      </button>
+                    </div>
+                    <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all">
+                      <input type="checkbox" checked={stepStates[3].agreed} onChange={e => setStepSteps(prev => ({...prev, 3: {...prev[3], agreed: e.target.checked}}))} className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500" />
+                      <span className="text-sm font-bold text-slate-700">Я ознакомлен(а) и принимаю условия</span>
+                    </label>
+                    <button 
+                      disabled={!stepStates[3].agreed}
+                      onClick={() => completeStep(3)}
+                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50"
+                    >
+                      Договор принят
+                    </button>
+                  </div>
+                )}
+                {currentStep === 4 && (
+                  <div className="space-y-6">
+                    <div className="bg-slate-900 rounded-[32px] p-8 text-white space-y-6 shadow-2xl shadow-blue-100">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-black">Счёт на оплату №{dealData.id?.toString().slice(0, 5)}-2026</h3>
+                          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">от 23 июня 2026 г.</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-3xl font-black text-blue-400">{dealData.budget} ₽</div>
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">К оплате</div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-xs">
+                          <div className="space-y-1">
+                            <div className="text-white/30 font-bold uppercase tracking-tighter">Получатель</div>
+                            <div className="font-bold">ИП Соколова Алина</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-white/30 font-bold uppercase tracking-tighter">ИНН</div>
+                            <div className="font-bold">772233445566</div>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-xs">
+                          <div className="text-white/30 font-bold uppercase tracking-tighter">Назначение платежа</div>
+                          <div className="font-bold">Оплата по договору №123 от 23.06.2026 за рекламные услуги</div>
+                        </div>
+                      </div>
+
+                      <button className="w-full py-4 bg-white text-slate-900 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
+                        <Download size={20} /> Скачать счёт (.PDF)
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="flex items-center gap-3 p-6 bg-slate-50 rounded-[24px] cursor-pointer border-2 border-transparent hover:border-blue-200 transition-all">
+                        <input 
+                          type="checkbox" 
+                          checked={stepStates[4].sent} 
+                          onChange={e => setStepSteps(prev => ({...prev, 4: {...prev[4], sent: e.target.checked}}))} 
+                          className="w-6 h-6 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500" 
+                        />
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-black text-slate-900">Оплачено</span>
+                          {stepStates[4].sent && <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Оплата подтверждена</p>}
+                        </div>
+                      </label>
+                    </div>
+
+                    <button 
+                      disabled={!stepStates[4].sent}
+                      onClick={() => completeStep(4)}
+                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50"
+                    >
+                      Продолжить
+                    </button>
+                  </div>
+                )}
+
+                {isInstagramUGC ? (
+                  <>
+                    {currentStep === 5 && (
+                      <div className="space-y-6">
+                        <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                              <Upload size={20} />
+                            </div>
+                            <h3 className="font-black text-blue-900">Передача видеоматериала</h3>
+                          </div>
+                          <p className="text-sm text-blue-800 font-medium">
+                            Загрузите финальный видеоролик. После того как бренд скачает и подтвердит получение, сделка будет завершена.
+                          </p>
+                        </div>
+
+                        <div className="p-8 border-2 border-dashed border-slate-200 rounded-[32px] flex flex-col items-center gap-4 bg-white">
+                          {!stepStates[5].videoUrl ? (
+                            <>
+                              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400">
+                                <Upload size={32} />
+                              </div>
+                              <div className="text-center">
+                                <div className="font-black text-slate-900">Загрузите видео</div>
+                                <div className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">MP4, MOV до 100MB</div>
+                              </div>
+                              <button 
+                                onClick={() => setStepSteps(prev => ({...prev, 5: {...prev[5], videoUrl: 'https://example.com/video.mp4'}}))}
+                                className="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all"
+                              >
+                                Выбрать файл
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500">
+                                <CheckCircle2 size={32} />
+                              </div>
+                              <div className="text-center">
+                                <div className="font-black text-slate-900">Видео загружено</div>
+                                <div className="text-xs text-emerald-600 font-bold uppercase tracking-widest mt-1">video_final_ugc.mp4</div>
+                              </div>
+                              <div className="flex gap-3 w-full">
+                                <button className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+                                  <Download size={16} /> Скачать
+                                </button>
+                                <button onClick={() => setStepSteps(prev => ({...prev, 5: {...prev[5], videoUrl: null}}))} className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:text-red-500 transition-all">
+                                  <X size={20} />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {stepStates[5].videoUrl && (
+                          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                            <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer border-2 border-transparent hover:border-blue-200 transition-all">
+                              <input 
+                                type="checkbox" 
+                                checked={stepStates[5].videoReceived} 
+                                onChange={e => setStepSteps(prev => ({...prev, 5: {...prev[5], videoReceived: e.target.checked}}))} 
+                                className="w-5 h-5 rounded-lg border-slate-200 text-blue-600" 
+                              />
+                              <span className="text-sm font-bold text-slate-700">Видео получено и проверено</span>
+                            </label>
+                            
+                            <button 
+                              disabled={!stepStates[5].videoReceived}
+                              onClick={() => completeStep(5)}
+                              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50"
+                            >
+                              Сохранить и завершить сделку
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {currentStep === 6 && (
+                      <div className="text-center py-12 space-y-6">
+                        <div className="w-24 h-24 bg-emerald-500 rounded-[32px] flex items-center justify-center mx-auto text-white shadow-2xl shadow-emerald-200">
+                          <CheckCircle2 size={48} />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-2xl font-black text-slate-900">Сделка успешно завершена!</h3>
+                          <p className="text-slate-500 font-medium">Все обязательства выполнены, права на контент переданы бренду.</p>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            alert('Сделка завершена');
+                            router.push('/dashboard/brand');
+                          }}
+                          className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all"
+                        >
+                          Вернуться в кабинет
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {currentStep === 5 && (
+                      <div className="space-y-6">
+                        <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 flex gap-4">
+                          <Clock className="text-blue-600 shrink-0" size={24} />
+                          <p className="text-sm font-medium text-blue-900 leading-relaxed">
+                            Ожидаем подтверждения получения средств блогером. Обычно это занимает от 15 минут до 3-х рабочих дней.
+                          </p>
+                        </div>
+                        <div className="text-center py-12 space-y-4">
+                          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 animate-pulse">
+                            <ShieldCheck size={40} />
+                          </div>
+                          <h3 className="text-xl font-black text-slate-900">Средства в пути</h3>
+                        </div>
+                        <button 
+                          onClick={() => completeStep(5)}
+                          className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl hover:bg-slate-800 transition-all"
+                        >
+                          Имитировать получение (для демо)
+                        </button>
+                      </div>
+                    )}
+                    {currentStep === 6 && (
+                      <div className="space-y-8 py-4">
+                        <div className="p-6 bg-blue-900 rounded-[32px] text-white space-y-4 shadow-2xl shadow-blue-200">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                              <ShieldCheck size={20} />
+                            </div>
+                            <h3 className="font-black text-lg">Регистрация в ОРД</h3>
+                          </div>
+                          <p className="text-blue-100 text-sm leading-relaxed">
+                            Для легального размещения рекламы необходимо передать данные о креативе в Единый реестр интернет-рекламы (ЕРИР).
+                          </p>
+                          {!stepStates[6].received ? (
+                            <button 
+                              onClick={generateErid}
+                              disabled={stepStates[6].loading}
+                              className="w-full py-4 bg-white text-blue-900 rounded-2xl font-black hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                            >
+                              {stepStates[6].loading ? (
+                                <><Clock className="animate-spin" size={20} /> Ожидание ответа...</>
+                              ) : 'Отправить данные в ОРД'}
+                            </button>
+                          ) : (
+                            <div className="bg-white/10 p-4 rounded-2xl border border-white/20 space-y-2 animate-in fade-in zoom-in duration-500">
+                              <div className="text-[10px] font-black uppercase tracking-widest text-blue-300">Ваш токен (ERID)</div>
+                              <div className="text-xl font-mono font-black tracking-wider">{dealData.erid}</div>
+                              <div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                                <CheckCircle2 size={12} /> Токен успешно получен
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {stepStates[6].received && (
+                          <button 
+                            onClick={() => completeStep(6)}
+                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
+                          >
+                            Продолжить
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {currentStep === 7 && (
+                      <div className="space-y-6">
+                        <div className="p-6 bg-slate-50 rounded-3xl space-y-4">
+                          <div className="space-y-1">
+                            <h3 className="font-black text-slate-900">Размещение рекламы</h3>
+                            <p className="text-xs text-slate-500">Опубликуйте пост и укажите токен: <span className="font-mono font-bold text-blue-600">#реклама {dealData.erid}</span></p>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ссылка на публикацию</label>
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={stepStates[7].link}
+                                onChange={e => setStepSteps(prev => ({...prev, 7: {...prev[7], link: e.target.value}}))}
+                                placeholder="https://instagram.com/p/..." 
+                                className="flex-1 bg-white border border-slate-100 rounded-xl px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20" 
+                              />
+                              <button className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all"><ExternalLink size={18} /></button>
+                            </div>
+                          </div>
+                          <label className="flex items-center gap-3 p-4 bg-white rounded-2xl cursor-pointer border border-slate-100">
+                            <input type="checkbox" checked={stepStates[7].posted} onChange={e => setStepSteps(prev => ({...prev, 7: {...prev[7], posted: e.target.checked}}))} className="w-5 h-5 rounded-lg border-slate-200 text-blue-600" />
+                            <span className="text-sm font-bold text-slate-700">Реклама размещена, токен указан</span>
+                          </label>
+                        </div>
+                        <button 
+                          disabled={!stepStates[7].posted || !stepStates[7].link}
+                          onClick={() => {
+                            setDealData(prev => ({...prev, link: stepStates[7].link}))
+                            completeStep(7)
+                          }}
+                          className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50"
+                        >
+                          Отправить ссылку бренду
+                        </button>
+                      </div>
+                    )}
+
+                    {currentStep === 8 && (
+                      <div className="space-y-8">
+                        <div className="p-6 bg-blue-50 rounded-[32px] space-y-6 border border-blue-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                              <Calculator size={20} />
+                            </div>
+                            <h3 className="font-black text-blue-900">Эффективность маркетинга</h3>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                              <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Исходные данные</div>
+                              <div className="space-y-3">
+                                {[
+                                  { label: 'Показы', key: 'impressions' },
+                                  { label: 'Клики', key: 'clicks' },
+                                  { label: 'Количество продаж', key: 'sales' },
+                                  { label: 'Доход (₽)', key: 'revenue' },
+                                  { label: 'Затраты (₽)', key: 'spend' },
+                                ].map((field) => (
+                                  <div key={field.key} className="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-50">
+                                    <span className="text-xs font-bold text-slate-600">{field.label}</span>
+                                    <input 
+                                      type="number" 
+                                      value={(marketingStats as any)[field.key] || ''}
+                                      onChange={e => {
+                                        const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                                        setMarketingStats(prev => ({...prev, [field.key]: val}));
+                                      }}
+                                      className="w-24 text-right font-black text-blue-600 outline-none text-sm" 
+                                      placeholder="0" 
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Результаты (KPI)</div>
+                              <div className="grid grid-cols-2 gap-3">
+                                {[
+                                  { label: 'CPM', value: calculateMarketingMetrics().cpm, unit: '₽' },
+                                  { label: 'CPC', value: calculateMarketingMetrics().cpc, unit: '₽' },
+                                  { label: 'CTR', value: calculateMarketingMetrics().ctr, unit: '%' },
+                                  { label: 'CR', value: calculateMarketingMetrics().conversionRate, unit: '%' },
+                                ].map((kpi) => (
+                                  <div key={kpi.label} className="p-4 bg-blue-600 rounded-2xl text-white space-y-1 shadow-lg shadow-blue-100">
+                                    <div className="text-[9px] font-black uppercase opacity-60">{kpi.label}</div>
+                                    <div className="text-lg font-black">{kpi.value} <span className="text-[10px] opacity-60">{kpi.unit}</span></div>
+                                  </div>
+                                ))}
+                                <div className="col-span-2 p-4 bg-slate-900 rounded-2xl text-white flex justify-between items-center">
+                                  <div className="text-[9px] font-black uppercase opacity-60">ROMI</div>
+                                  <div className="text-xl font-black text-emerald-400">{calculateMarketingMetrics().romi}%</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Блок выводов */}
+                          <div className="p-5 bg-white rounded-2xl border border-blue-100 space-y-3">
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <Sparkles size={18} />
+                              <span className="text-xs font-black uppercase tracking-wider">Выводы и анализ</span>
+                            </div>
+                            <div className="space-y-2">
+                              {getInsights().map((insight, idx) => (
+                                <div key={idx} className="flex gap-2 items-start">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                                  <p className="text-sm font-bold text-slate-700 leading-snug">{insight}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <button 
+                              onClick={() => {
+                                localStorage.setItem(`deal_${params.id}_stats`, JSON.stringify(marketingStats));
+                                alert('Данные сохранены');
+                              }}
+                              className="py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-2xl font-black hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                            >
+                              <Save size={20} /> Сохранить
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setStepSteps(prev => ({...prev, 8: {...prev[8], loading: true}}))
+                                setTimeout(() => {
+                                  setStepSteps(prev => ({...prev, 8: {...prev[8], loading: false, sentToErir: true}}))
+                                  setShowModal('tax')
+                                }, 1500)
+                              }}
+                              className="py-4 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                            >
+                              {stepStates[8].loading ? <Clock className="animate-spin" size={20} /> : 'В ЕРИР'}
+                            </button>
+                          </div>
+                        </div>
+                        {stepStates[8].sentToErir && (
+                          <button onClick={() => completeStep(8)} className="w-full py-4 border-2 border-blue-600 text-blue-600 rounded-2xl font-black hover:bg-blue-50 transition-all">Продолжить</button>
+                        )}
+                      </div>
+                    )}
+                    {currentStep === 9 && (
+                      <div className="space-y-8">
+                        <div className="bg-slate-900 rounded-[32px] p-8 text-white space-y-6">
+                          <h3 className="text-xl font-black">Итоговая сводка</h3>
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                              <span className="text-white/60 font-bold">Сумма сделки</span>
+                              <span className="text-xl font-black">{dealData.budget} ₽</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                              <span className="text-white/60 font-bold">Налог (3%)</span>
+                              <span className="text-amber-400 font-black">-{dealData.budget * 0.03} ₽</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2">
+                              <span className="text-white/60 font-bold">Чистый доход блогера</span>
+                              <span className="text-2xl font-black text-emerald-400">{dealData.budget * 0.97} ₽</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <button className="p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:border-blue-200 transition-all"><Download size={18} /> Акт</button>
+                          <button className="p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:border-blue-200 transition-all"><Download size={18} /> Договор</button>
+                        </div>
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer">
+                            <input type="checkbox" checked={stepStates[9].brandFinished} onChange={e => setStepSteps(prev => ({...prev, 9: {...prev[9], brandFinished: e.target.checked}}))} className="w-5 h-5 rounded-lg border-slate-200 text-blue-600" />
+                            <span className="text-sm font-bold text-slate-700">Бренд подтверждает завершение</span>
+                          </label>
+                          <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer">
+                            <input type="checkbox" checked={stepStates[9].bloggerFinished} onChange={e => setStepSteps(prev => ({...prev, 9: {...prev[9], bloggerFinished: e.target.checked}}))} className="w-5 h-5 rounded-lg border-slate-200 text-blue-600" />
+                            <span className="text-sm font-bold text-slate-700">Блогер подтверждает завершение</span>
+                          </label>
+                        </div>
+                        <button 
+                          disabled={!stepStates[9].brandFinished || !stepStates[9].bloggerFinished}
+                          onClick={() => completeStep(9)}
+                          className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all disabled:opacity-50"
+                        >
+                          Сделка завершена
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {/* Modals */}
+      <AnimatePresence>        {showModal && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={`bg-white w-full ${showModal === 'selectBlogger' ? 'max-w-3xl' : 'max-w-2xl'} rounded-[32px] shadow-2xl relative overflow-hidden`}
+            >
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
+                  {showModal === 'preliminary' ? 'Предварительное согласие' : 
+                   showModal === 'main' ? 'Стандартный договор' : 
+                   showModal === 'tax' ? 'Калькулятор налогов' :
+                   showModal === 'selectBlogger' ? 'Выбор исполнителя' : 'Чат с блогером'}
+                </h3>
+                <button onClick={() => setShowModal(null)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
+              </div>
+
+              <div className="p-8 max-h-[70vh] overflow-y-auto">
+                {showModal === 'selectBlogger' && (
+                  <div className="grid grid-cols-1 gap-4">
+                    {mockCandidates.map((candidate) => (
+                      <div key={candidate.id} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-lg transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm shrink-0">
+                            <img src={candidate.avatar} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-black text-slate-900">{candidate.name}</div>
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{candidate.experience}</div>
+                            <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg inline-block">{candidate.offer}</div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setStepSteps(prev => ({...prev, 1: {...prev[1], selectedBlogger: candidate}}))
+                            setShowModal(null)
+                          }}
+                          className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 transition-all"
+                        >
+                          Выбрать
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {showModal === 'chat' && (
+                  <div className="space-y-4">
+                    <div className="h-64 bg-slate-50 rounded-2xl p-4 overflow-y-auto space-y-3">
+                      <div className="bg-white p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm font-medium text-slate-700 border border-slate-100 shadow-sm">
+                        Здравствуйте! Хочу обсудить детали договора.
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Напишите сообщение..." className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20" />
+                      <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all"><Send size={18} /></button>
+                    </div>
+                  </div>
+                )}
+
+                {(showModal === 'preliminary' || showModal === 'main') && (
+                  <div className="text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-wrap font-serif bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    {showModal === 'preliminary' 
+                      ? getContractText(PRELIMINARY_AGREEMENT) 
+                      : getContractText(MAIN_CONTRACT_TEMPLATE)}
+                  </div>
+                )}
+
+                {showModal === 'tax' && (
+                  <div className="space-y-6 text-center py-4">
+                    <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-600">
+                      <Calculator size={40} />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-3xl font-black text-slate-900">{calculateTax().tax} ₽</div>
+                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">Сумма налога (3%)</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 rounded-2xl text-left">
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Комиссия системы</div>
+                        <div className="text-sm font-black text-slate-900">{calculateTax().commission} ₽</div>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-2xl text-left">
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Поддержка</div>
+                        <div className="text-sm font-black text-slate-900">{calculateTax().support} ₽</div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-blue-600 rounded-3xl text-white text-left space-y-4 shadow-xl shadow-blue-100">
+                      <p className="font-bold leading-relaxed text-sm">Это 3% от вашей рекламы. Для сравнения:</p>
+                      <ul className="space-y-3 text-xs font-medium">
+                        <li className="flex items-center gap-3 bg-white/10 p-3 rounded-xl"><span className="text-lg">👨‍🏫</span> Зарплата учителя за {calculateTax().teacherDays} дня</li>
+                        <li className="flex items-center gap-3 bg-white/10 p-3 rounded-xl"><span className="text-lg">👵</span> Пенсия для {calculateTax().pensioners} пенсионеров</li>
+                        <li className="flex items-center gap-3 bg-white/10 p-3 rounded-xl"><span className="text-lg">🍲</span> {calculateTax().lunches} обедов в столовой</li>
+                      </ul>
+                    </div>
+                    <button onClick={() => setShowModal(null)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all">Понятно</button>
+                  </div>
+                )}              </div>
+
+              {showModal !== 'tax' && showModal !== 'selectBlogger' && showModal !== 'chat' && (
+                <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                  <button className="px-6 py-3 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-black text-xs uppercase hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <Download size={16} /> Скачать .PDF
+                  </button>
+                  <button onClick={() => setShowModal(null)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase hover:bg-blue-700 transition-all">Закрыть</button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>    </div>
+  )
+}

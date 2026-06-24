@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -17,7 +17,7 @@ const bloggerTypes = [
 ]
 const platforms = [
   { id: 'tg', label: 'Telegram', icon: '📱', info: 'Прямая реклама разрешена. Эффективно для текстов и ссылок.' },
-  { id: 'vk', label: 'VK', icon: '��', info: 'Официальная реклама и посевы в сообществах.' },
+  { id: 'vk', label: 'VK', icon: '👥', info: 'Официальная реклама и посевы в сообществах.' },
   { id: 'yt', label: 'YouTube', icon: '🎥', info: 'Прямая реклама (интеграции) разрешена. Высокое доверие аудитории.' },
   { id: 'tt', label: 'TikTok', icon: '🎵', info: 'Короткие виральные ролики. Высокий охват.' },
   { id: 'inst', label: 'Instagram', icon: '📸', info: 'Прямая реклама запрещена. Доступно в формате нативной рекламы.' }
@@ -74,6 +74,7 @@ export default function CreateCampaign() {
     setLoading(true)
     console.log('Имитация создания кампании...')
     
+    // Ускоряем задержку до 500мс
     await new Promise(resolve => setTimeout(resolve, 500))
     
     try {
@@ -88,10 +89,12 @@ export default function CreateCampaign() {
 
   return (
     <div className="min-h-screen bg-blue-50/30 py-4 md:py-6 px-4 relative overflow-hidden">
+      {/* Декоративные элементы */}
       <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-blue-100 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-orange-50 rounded-full blur-3xl -z-10" />
 
       <div className="max-w-3xl mx-auto relative z-10">
+        {/* Progress Bar */}
         <div className="mb-6 flex justify-between items-center px-8">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center">

@@ -11,10 +11,7 @@ export default function Home() {
       <nav className="w-full max-w-[1200px] flex justify-between items-center py-2.5 z-10">
         <div className="text-2xl md:text-[28px] font-black tracking-tighter">ЗОРКО</div>
         <div className="flex gap-4 md:gap-5 items-center">
-          <Link href="/login" className="text-white/70 no-underline font-bold text-sm">Войти</Link>
-          <Link href="/register" className="bg-white text-[#1e3a8a] px-4 md:px-[25px] py-2 md:py-2.5 rounded-full no-underline font-extrabold text-sm shadow-lg">
-            Начать
-          </Link>
+          {/* Авторизация временно отключена */}
         </div>
       </nav>
 
@@ -28,15 +25,14 @@ export default function Home() {
         </p>
         
         <div className="flex flex-col md:flex-row gap-4 md:gap-[15px] justify-center items-center">
-          <Link href="/register?role=brand" className="w-full md:w-auto min-h-[48px] bg-white text-[#1e3a8a] px-7 py-3.5 rounded-[24px] no-underline font-black text-base shadow-xl flex items-center justify-center gap-2">
+          <Link href="/onboarding/brand" className="w-full md:w-auto min-h-[48px] bg-white text-[#1e3a8a] px-7 py-3.5 rounded-[24px] no-underline font-black text-base shadow-xl flex items-center justify-center gap-2">
             Я Бренд <ArrowRight size={18} />
           </Link>
-          <Link href="/register?role=blogger" className="w-full md:w-auto min-h-[48px] bg-white/10 text-white px-7 py-3.5 rounded-[24px] no-underline font-black text-base border-2 border-white/20 backdrop-blur-md flex items-center justify-center gap-2">
+          <Link href="/campaign/create" className="w-full md:w-auto min-h-[48px] bg-white/10 text-white px-7 py-3.5 rounded-[24px] no-underline font-black text-base border-2 border-white/20 backdrop-blur-md flex items-center justify-center gap-2">
             Я Блогер <ArrowRight size={18} />
           </Link>
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-[1100px] mt-12 md:mt-[30px] pb-8 md:pb-[30px] z-10 px-4">
         {[
           { icon: <Users size={24} />, title: "Быстрый подбор", desc: "Умные алгоритмы находят идеальных блогеров для вашей ниши за считанные секунды.", bg: 'bg-white/5' },
